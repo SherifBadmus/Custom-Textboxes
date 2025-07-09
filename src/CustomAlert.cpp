@@ -5,15 +5,8 @@
 
 void CustomAlert::showPopup(std::string id)
 {
-    auto rawJSON = readJSON(CustomAlert::jsonFilePath);
-    if (rawJSON == nullptr) return FLAlertLayer::create("Custom Textboxes", "Error loading <cy>custom alert</c> JSON! Maybe it has errors?", "OK")->show();
-
-    if (!rawJSON.contains(id)) {
-        if (Mod::get()->getSettingValue<bool>("missingIDWarn")) FLAlertLayer::create("Custom Textboxes", fmt::format("Popup ID not found!\nID: <cy>{}</c> ", id), "OK")->show();
-        return;
-    };
-
-    matjson::Value data = rawJSON[id];
+    auto data = getTextboxByID(CustomAlert::jsonFilePath, CustomAlert::jsonFileName, id, "Popup");
+    if (data == nullptr) return;
 
     std::string alertType = getStr(data, "type", "alert");
 
@@ -160,13 +153,16 @@ void CustomAlert::showPopup(std::string id)
 
     // Normal popup
     else {
+        auto width = getNum(data, "width", 350.0f);
+        if (width < 100) width = 100.0f;
+
         FLAlertLayer* popup = FLAlertLayer::create(
             nullptr,
             title.c_str(),
             hasContent ? getText(content, "").c_str() : "",
             hasButton ? getText(button1, "OK").c_str() : "OK",
             data.contains("button2") ? getText(data["button2"], "Cancel").c_str() : nullptr,
-            getNum(data, "width", 350.0f)
+            width
         );
         popup->setID("custom_alertpopup"_spr);
         popup->show();

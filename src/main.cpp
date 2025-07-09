@@ -48,7 +48,8 @@ std::string getTargetID(std::string path, bool alt) {
 		checkMissingFiles();
     }
 
-	auto rawJSON = readJSON(path);
+	std::string err = "";
+	auto rawJSON = readJSON(path, err);
     if (rawJSON == nullptr) return "";
 
 	auto k = alt ? altShowKey : showKey;

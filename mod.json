@@ -6,7 +6,7 @@
 	},
 	"id": "colon.customtextboxes",
 	"name": "Custom Textboxes",
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"developer": "Colon",
 	"description": "Display custom popups, chests, and more",
 	"resources": {

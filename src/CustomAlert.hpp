@@ -58,5 +58,6 @@ inline std::map<std::string, std::string> EXTRA_BUTTON_COLORS = {
     { "geodeblue", "geode.loader/GE_button_01.png" },
     { "geodepink", "geode.loader/GE_button_02.png" },
     { "geodepurple", "geode.loader/GE_button_03.png" },
+    { "geodeblack", "geode.loader/GE_button_05.png" },
     { "trans", "geode.loader/GE_button_04.png" }
 };  

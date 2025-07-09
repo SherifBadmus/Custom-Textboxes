@@ -54,6 +54,7 @@ class CallerBackerInator {
             if (delay <= 0) return handleCallback(data, forced);
 
             auto timer = CCNode::create();
+            timer->setID("custom_callback_timer"_spr);
             CCScene::get()->addChild(timer);
 
             timer->runAction(

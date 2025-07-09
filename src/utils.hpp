@@ -1,6 +1,7 @@
 #pragma once
 #include <Geode/Geode.hpp>
 #include <matjson.hpp>
+#include <regex>
 
 #include "CustomAlert.hpp"
 #include "CustomChest.hpp"
@@ -102,14 +103,35 @@ inline std::map<std::string, int> ITEM_TYPES = {
     { "spiderAnimationFast", 19 },
 };
 
-inline matjson::Value readJSON(std::filesystem::path path) {
+inline std::regex errorPattern(R"(>:(\d+):(\d+)$)");
+
+inline matjson::Value readJSON(std::filesystem::path path, std::string& err) {
 	std::ifstream jsonFile(path);
     auto parsed = matjson::parse(jsonFile);
     if (!parsed) {
-        geode::log::error("{}", parsed.unwrapErr());
+        err = parsed.unwrapErr();
+        geode::log::error("{}", err);
         return nullptr;
     }
     else return parsed.unwrap();
+}
+
+// Read JSON or display an error popup
+inline matjson::Value getTextboxByID(std::filesystem::path path, std::filesystem::path shortPath, std::string id, std::string typeStr) {
+    std::string err;
+    auto rawJSON = readJSON(path, err);
+    if (rawJSON == nullptr) {
+        err = std::regex_replace(err, errorPattern, "line $1, position $2");
+        FLAlertLayer::create("Custom Textboxes", fmt::format("Failed to load <cy>{}</c>\n\nError: <cr>{}</c>", shortPath, err), "OK")->show();
+        return nullptr;
+    }
+    
+    if (!rawJSON.contains(id)) {
+        if (Mod::get()->getSettingValue<bool>("missingIDWarn")) FLAlertLayer::create("Custom Textboxes", fmt::format("{} ID not found!\nID: <cy>{}</c> ", typeStr, id), "OK")->show();
+        return nullptr;
+    };
+    
+    return rawJSON[id];
 }
 
 inline std::string getStr(matjson::Value data, char const* key, char const* fallback) {
@@ -247,6 +269,15 @@ inline IconData getIcon(matjson::Value data, char const* key) {
 }
 
 inline SoundData getCustomSound(matjson::Value data) {
+    if (data.isArray()) {
+        auto arr = data.asArray().unwrap();
+        if (arr.size() == 1) return getCustomSound(arr[0]);
+        else if (arr.size() > 1) {
+            auto val = arr[rand() % arr.size()];
+            if (val != nullptr && !val.isArray()) return getCustomSound(val);
+        }
+    }
+
     float vol = 1.0f;
     float speed = 0.0f;
     std::string sound;

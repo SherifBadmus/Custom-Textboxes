@@ -19,7 +19,7 @@ struct CustomDialogData {
 };
 std::map<int, CustomDialogData> storedCustomData;
 
-SoundData blipSound;
+matjson::Value blipSound;
 bool activeBlipSound = false;
 
 void dialogCallback(matjson::Value data, bool forced = false) {
@@ -58,7 +58,7 @@ class $modify(CustomDialogLayer, DialogLayer) {
 
         // Blip sound
         if (data.blipSound != nullptr) {
-            blipSound = getCustomSound(data.blipSound);
+            blipSound = data.blipSound;
             activeBlipSound = true;
         }
 
@@ -130,15 +130,9 @@ class $modify(CCFadeIn) {
 };
 
 void CustomTextbox::showTextbox(std::string id) {
-    auto rawJSON = readJSON(CustomTextbox::jsonFilePath);
-    if (rawJSON == nullptr) return FLAlertLayer::create("Custom Textboxes", "Error loading <cy>custom textbox</c> JSON! Maybe it has errors?", "OK")->show();
+    auto data = getTextboxByID(CustomTextbox::jsonFilePath, CustomTextbox::jsonFileName, id, "Dialogue");
+    if (data == nullptr) return;
 
-    if (!rawJSON.contains(id)) {
-        if (Mod::get()->getSettingValue<bool>("missingIDWarn")) FLAlertLayer::create("Custom Textboxes", fmt::format("Dialogue ID not found!\nID: <cy>{}</c> ", id), "OK")->show();
-        return;
-    };
-
-    matjson::Value data = rawJSON[id];
     bool pausesMusic = false;
 
     auto dialogLines = CCArray::create();

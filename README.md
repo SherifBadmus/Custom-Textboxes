@@ -103,7 +103,7 @@ Default keybind is HOME
 **Button properties** can be a string, OR an object with any of:
 - `content` (string or Text) - The message on the button
 - `background` (string) - Button color
-    - green, cyan, pink, grey, darkgrey, red, geodeblue, geodepink, geodepurple, or trans
+    - green, cyan, pink, grey, darkgrey, red, geodeblue, geodepink, geodepurple, geodeblack or trans
     - Uses GJ_button_0#.png texture in resources folder
 - `texture` ([filename](#texture-files-can-be-read-from)) - Custom button texture, overrides background
     - Use a name in the resources folder, e.g. "GJ_button_03.png"
@@ -417,10 +417,12 @@ Here's an example of a popup that plays a looping, rising tone:
 ## Extra resources
 
 ### Sound object
-The "sound" and "playSound" properties support a string filename such as "explode_11.ogg", or an object with:
+The "sound", "playSound", and other sound-related properties support a string filename such as "explode_11.ogg", or an object with:
 - `name` ([filename](#sound-files-can-be-read-from)) - Sound filename, must be in resources or a texture pack folder
 - `volume` (float) - Volume to play at, default is 1
 - `speed` (float) - Speed adjustment, in semitones. Default is 0 and a full octave (200% speed) is 12
+
+Additionally, you can provide an array with multiple sound objects and it will choose one randomly.
 
 ### Dialogue Portrait Strings
 If you don't want to find portraits by their ID, you can enter these strings instead. I don't recommend it, but it works if you're lazy or just want to make something quick.

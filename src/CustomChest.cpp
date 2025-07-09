@@ -23,15 +23,8 @@ class $modify(MyRUL, RewardUnlockLayer) {
 
 void CustomChest::showChest(std::string id) {
 
-    auto rawJSON = readJSON(CustomChest::jsonFilePath);
-    if (rawJSON == nullptr) return FLAlertLayer::create("Custom Textboxes", "Error loading <cy>custom chest</c> JSON! Maybe it has errors?", "OK")->show();
-
-    if (!rawJSON.contains(id)) {
-        if (Mod::get()->getSettingValue<bool>("missingIDWarn")) FLAlertLayer::create("Custom Textboxes", fmt::format("Chest ID not found!\nID: <cy>{}</c> ", id), "OK")->show();
-        return;
-    };
-
-    matjson::Value data = rawJSON[id];
+    auto data = getTextboxByID(CustomChest::jsonFilePath, CustomChest::jsonFileName, id, "Chest");
+    if (data == nullptr) return;
 
     int chestType = getKey(data, "type", CHEST_TYPES, 1);
     
