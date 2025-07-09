@@ -30,9 +30,13 @@ In most cases, you can also type `\n` to go to a new line
 
 ## General JSON Syntax
 
-General syntax for ALL FILES is:
+If you've never seen a JSON file before, it's [pretty easy to understand](<https://www.w3schools.com/js/js_json_datatypes.asp>). (just watch out for missing or trailing commas lol)
 
-```jsonc
+**Editing JSON files in Notepad is a very bad idea.** If you take a minute or two to install [VSCode](<https://code.visualstudio.com/download>) or similar, it will highlight all the errors and help you out with lots of other things.
+
+The general syntax for ALL FILES is:
+
+```js
 {
     "to-show": "name",  // spawned when pressing hotkey
     "to-show-alt": "alt-name",  // spawned when holding alt and pressing hotkey
