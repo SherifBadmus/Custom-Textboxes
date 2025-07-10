@@ -105,6 +105,8 @@ inline std::map<std::string, int> ITEM_TYPES = {
 
 inline std::regex errorPattern(R"(>:(\d+):(\d+)$)");
 
+inline std::string NULL_TEXTURE = "geode.texture-loader/fallback";
+
 inline matjson::Value readJSON(std::filesystem::path path, std::string& err) {
 	std::ifstream jsonFile(path);
     auto parsed = matjson::parse(jsonFile);
@@ -198,11 +200,11 @@ inline ccColor3B getColor(matjson::Value data, char const* key = "color", ccColo
 inline CCSprite* getCustomTexture(char const* frame, char const* fallback, bool fallbackIsResource = false) {
     // Search spritesheets
     CCSprite* customTexture = CCSprite::createWithSpriteFrameName(frame);
-    if (customTexture != nullptr && !customTexture->getUserObject("geode.texture-loader/fallback")) return customTexture;
+    if (customTexture != nullptr && !customTexture->getUserObject(NULL_TEXTURE)) return customTexture;
 
     // Search resources
     CCSprite* customResource = CCSprite::create(frame);
-    if (customResource != nullptr && !customResource->getUserObject("geode.texture-loader/fallback")) return customResource;
+    if (customResource != nullptr && !customResource->getUserObject(NULL_TEXTURE)) return customResource;
 
     // Return fallback for borders
     if (fallbackIsResource) return CCSprite::create(fallback);
@@ -212,6 +214,12 @@ inline CCSprite* getCustomTexture(char const* frame, char const* fallback, bool 
 
     // Return fallback
     return CCSprite::createWithSpriteFrameName(fallback);
+}
+
+inline void set9SpriteFrame(CCScale9Sprite* slice, CCSprite* sprite) {
+    CCSize bgSize = slice->getContentSize();
+    slice->setSpriteFrame(sprite->displayFrame());
+    slice->setContentSize(bgSize);
 }
 
 inline void setBorder(CCLayer* layer, matjson::Value data, int fallback = 1, char const* key = "background") {
@@ -232,11 +240,7 @@ inline void setBorder(CCLayer* layer, matjson::Value data, int fallback = 1, cha
             else bg = fmt::format("GJ_square0{}.png", std::clamp(borderID, 1, 7));
         }
     
-        CCSize bgSize = slice->getContentSize();
-        CCSprite* sprite = getCustomTexture(bg.c_str(), fmt::format("GJ_square0{}.png", fallback).c_str(), true);
-
-        slice->setSpriteFrame(sprite->displayFrame());
-        slice->setContentSize(bgSize);
+        set9SpriteFrame(slice, getCustomTexture(bg.c_str(), fmt::format("GJ_square0{}.png", fallback).c_str(), true));
     }
 }
 

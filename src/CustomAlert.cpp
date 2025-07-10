@@ -47,8 +47,7 @@ void CustomAlert::showPopup(std::string id)
         }
 
         if (hasButton) {
-            auto okContainer = iconLayer->getChildByType<CCMenu>(0);
-            auto okParent = okContainer->getChildByType<CCMenuItemSpriteExtra>(0);
+            auto okParent = popup->m_buttonMenu->getChildByType<CCMenuItemSpriteExtra>(0);
             customizeButton(okParent, popup, button1, "OK");
         }
 
@@ -57,6 +56,8 @@ void CustomAlert::showPopup(std::string id)
         createCloseButton(popup, data, {-145, 195});
 
         setBorder(popup->m_mainLayer, data);
+
+        setupCustomButtons(popup, data);
 
         customizeIcon(iconLayer->getChildByType<GJItemIcon>(0)->m_player, data);
 
@@ -92,13 +93,15 @@ void CustomAlert::showPopup(std::string id)
 
 
         // Buttons
-        CCMenu* buttonMenu = purchaseLayer->getChildByType<CCMenu>(0);
+        CCMenu* buttonMenu = popup->m_buttonMenu;
         if (hasButton) customizeButton(buttonMenu->getChildByType<CCMenuItemSpriteExtra>(1), popup, button1, "Buy");
         if (data.contains("button2")) customizeButton(buttonMenu->getChildByType<CCMenuItemSpriteExtra>(0), popup, data["button2"], "Cancel");
 
         if (data.contains("customTexture")) setupCustomTexture(purchaseLayer, data);
 
         createCloseButton(popup, data, {-124, 87});
+
+        setupCustomButtons(popup, data);
 
         customizeIcon(purchaseLayer->getChildByType<GJItemIcon>(0)->m_player, data);
 
@@ -123,7 +126,11 @@ void CustomAlert::showPopup(std::string id)
         popup->setID("custom_modpopup"_spr);
         popup->show();
 
+        popup->m_submitButton->setTarget(popup, menu_selector(RateStarsLayer::onClose));
+
         if (hasButton) customizeButton(popup->m_submitButton, popup, button1, "Submit");
+
+        setupCustomButtons(popup, data);
     }
 
 
@@ -148,6 +155,8 @@ void CustomAlert::showPopup(std::string id)
 
         if (hasButton) customizeButton(comment->m_buttonMenu->getChildByType<CCMenuItemSpriteExtra>(-1), comment, button1, "");
         if (data.contains("button2")) customizeButton(comment->m_buttonMenu->getChildByType<CCMenuItemSpriteExtra>(-2), comment, data["button2"], "");
+
+        setupCustomButtons(comment, data);
     }
 
 
@@ -181,6 +190,8 @@ void CustomAlert::showPopup(std::string id)
 
         if (hasButton) customizeButton(popup->m_buttonMenu->getChildByType<CCMenuItemSpriteExtra>(0), popup, button1, "OK");
         if (data.contains("button2")) customizeButton(popup->m_buttonMenu->getChildByType<CCMenuItemSpriteExtra>(1), popup, data["button2"], "Cancel");
+
+        setupCustomButtons(popup, data);
     }
 }
 
@@ -247,6 +258,8 @@ void customizeButton(CCMenuItemSpriteExtra* buttonBase, CCObject* parent, matjso
     CCLabelBMFont* label = button->getChildByType<CCLabelBMFont>(0);
     if (!label) return;
 
+    CCScale9Sprite* slice = button->getChildByType<CCScale9Sprite>(0);
+
     if (fallback == "") fallback = label->m_sInitialStringUTF8;
     std::string str = getText(data, fallback);
 
@@ -255,8 +268,9 @@ void customizeButton(CCMenuItemSpriteExtra* buttonBase, CCObject* parent, matjso
     
     // ====== //
 
-    if (data.contains("texture")) {
-        button->updateBGImage(getStr(data, "texture").c_str());
+    if (slice && data.contains("texture")) {
+        auto customTexture = getCustomTexture(getStr(data, "texture").c_str(), "GJ_button_06.png", true);
+        set9SpriteFrame(slice, customTexture);  // button->updateBGImage() is very prone to crashes
     }
 
     else if (data.contains("background")) {
@@ -281,7 +295,6 @@ void customizeButton(CCMenuItemSpriteExtra* buttonBase, CCObject* parent, matjso
     float w = getNum(data, "width", std::clamp(label->getContentWidth() + 14.0f, size.width, 150.0f));
     float h = getNum(data, "height", size.height);
 
-    CCScale9Sprite* slice = button->getChildByType<CCScale9Sprite>(0);
     if (slice && (w != size.width || h != size.height)) {
         buttonBase->setContentSize({w, h});
         label->setPositionX(w / 2.0f);
@@ -296,6 +309,7 @@ void customizeButton(CCMenuItemSpriteExtra* buttonBase, CCObject* parent, matjso
 
     if (data.contains("x") && data["x"].isNumber()) buttonBase->setPositionX(getNum(data, "x", 0.0f));
     if (data.contains("y") && data["y"].isNumber()) buttonBase->setPositionY(getNum(data, "y", 0.0f));
+    if (data.contains("z") && data["z"].isNumber()) buttonBase->setZOrder(getInt(data, "z", 0));
 
     if (data.contains("pulse")) {
         auto pulseData = data["pulse"];
@@ -376,4 +390,33 @@ void setupCustomTexture(CCLayer* layer, matjson::Value data) {
     customSprite->setPosition(iconImg->getPosition());
     customSprite->setScale(scale);
     layer->addChild(customSprite);
+}
+
+void setupCustomButtons(FLAlertLayer* layer, matjson::Value data) {
+    if (!data.contains("extraButtons")) return;
+    auto dat = data["extraButtons"];
+
+    if (dat.isObject()) createExtraButton(layer, dat);
+
+    else if (dat.isArray()) {
+        auto arr = dat.asArray().unwrap();
+        for (auto b : arr) {
+            createExtraButton(layer, b);
+        }
+    }
+}
+
+void createExtraButton(FLAlertLayer* layer, matjson::Value data) {
+    // just create a default button sprite and change the properties in customizeButton()
+    // can probably improve on this later but it works for now
+
+    auto msg = getText(data, "OK");
+    auto bSprite = ButtonSprite::create(msg.c_str());
+    if (!bSprite) return;
+
+    auto bItem = CCMenuItemExt::createSpriteExtra(bSprite, [layer](auto) { layer->keyBackClicked(); });
+    bItem->setID("custom_button"_spr);
+
+    customizeButton(bItem, layer, data, msg);
+    layer->m_buttonMenu->addChild(bItem);
 }

@@ -38,6 +38,9 @@ void createCloseButton(FLAlertLayer* parent, matjson::Value data, CCPoint positi
 void customizeButton(CCMenuItemSpriteExtra* button, CCObject* parent, matjson::Value data, std::string fallback);
 void customizeIcon(CCSprite* icon, matjson::Value data);
 
+void setupCustomButtons(FLAlertLayer* layer, matjson::Value data);
+void createExtraButton(FLAlertLayer* layer, matjson::Value data);
+
 void setupCustomTexture(CCLayer* layer, matjson::Value data);
 
 inline std::map<std::string, int> BUTTON_COLORS = {

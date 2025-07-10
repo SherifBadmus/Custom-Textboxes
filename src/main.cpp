@@ -2,6 +2,7 @@
 #include <Geode/modify/CCMenuItemSpriteExtra.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include <Geode/modify/DialogLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
 
 #include "utils.hpp"
 #include "CustomAlert.hpp"
@@ -38,9 +39,9 @@ void clearQueue() {
 	queuedChest = "";
 }
 
-void playQueueSound() {
+void playQueueSound(bool lower = false) {
 	if (!Mod::get()->getSettingValue<bool>("shiftSound")) return;
-	FMODAudioEngine::sharedEngine()->playEffect("counter003.ogg");
+	FMODAudioEngine::sharedEngine()->playEffect("counter003.ogg", lower ? 0.7f : 1.0f, 1, 0.8f);
 }
 
 std::string getTargetID(std::string path, bool alt) {
@@ -94,8 +95,17 @@ bool dontShowPopupHere() {
 	return CCScene::get() == nullptr || CCScene::get()->getChildByType<KeyPickerPopup>(0) != nullptr;
 }
 
-bool getShift() { return CCKeyboardDispatcher::get()->getShiftKeyPressed(); }
-bool getAlt() { return CCKeyboardDispatcher::get()->getAltKeyPressed(); }
+bool getModifier(std::string key) {
+	auto val = Mod::get()->getSettingValue<std::string>(key);
+	if (val == "Shift") return CCKeyboardDispatcher::get()->getShiftKeyPressed();
+	if (val == "Alt") return CCKeyboardDispatcher::get()->getAltKeyPressed();
+	if (val == "Ctrl") return CCKeyboardDispatcher::get()->getControlKeyPressed();
+	if (val == "Command") return CCKeyboardDispatcher::get()->getCommandKeyPressed();
+	return false;
+}
+
+bool getShift() { return getModifier("shiftRebind"); }
+bool getAlt() { return getModifier("altRebind"); }
 
 void prepPopup() {
 	if (dontShowPopupHere()) return;
@@ -143,32 +153,25 @@ bool killAllAlerts() {
 			killed = true;
 		}
 	} 
+
+	// Clear queue
+	
+	if (!killed && (!queuedChest.empty() || !queuedPopup.empty() || !queuedTextbox.empty())) {
+		killed = true;
+		playQueueSound(true);
+	}
+	clearQueue(); // to be safe
+	
 	return killed;
 }
 
-// Button queueing
-class $modify(CCMenuItemSpriteExtra) {
-	void activate() {
-		if (queuedPopup != "") {
-			runPopup(queuedPopup);
-		}
-		else if (queuedTextbox != "") {
-			runTextbox(queuedTextbox);
-		}
-		else if (queuedChest != "") {
-			runChest(queuedChest);
-		}
-		else {
-			CCMenuItemSpriteExtra::activate();
-		}
-	}
-};
 
+// Handle key presses
 class $modify(CCKeyboardDispatcher) {
 	bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
 		if (repeat || !down || key == KEY_None || key == KEY_Unknown) return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
 
-		else if (key == KEY_Escape && getShift()) {
+		else if (key == KEY_Escape && CCKeyboardDispatcher::get()->getShiftKeyPressed()) {
 			if (killAllAlerts()) return false;
 		}
 
@@ -177,6 +180,37 @@ class $modify(CCKeyboardDispatcher) {
 		else if (key == getChestKey()) prepChest();
 		
 		return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
+	}
+};
+
+bool playQueue() {
+	if (queuedPopup != "") {
+		runPopup(queuedPopup);
+		return true;
+	}
+	else if (queuedTextbox != "") {
+		runTextbox(queuedTextbox);
+		return true;
+	}
+	else if (queuedChest != "") {
+		runChest(queuedChest);
+		return true;
+	}
+	return false;
+}
+
+// Button queueing
+class $modify(CCMenuItemSpriteExtra) {
+	void activate() {
+		if (!playQueue()) CCMenuItemSpriteExtra::activate();
+	}
+};
+
+// Run queued textbox on death (it's funny, why not)
+class $modify(PlayLayer) {
+	void destroyPlayer(PlayerObject* player, GameObject* obj) {
+		PlayLayer::destroyPlayer(player, obj);
+		if (obj != m_anticheatSpike && Mod::get()->getSettingValue<bool>("onDeath")) playQueue();
 	}
 };
 

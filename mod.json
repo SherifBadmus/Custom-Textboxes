@@ -6,7 +6,7 @@
 	},
 	"id": "colon.customtextboxes",
 	"name": "Custom Textboxes",
-	"version": "v1.0.3",
+	"version": "v1.0.4",
 	"developer": "Colon",
 	"description": "Display custom popups, chests, and more",
 	"resources": {
@@ -24,13 +24,13 @@
 		"key_popup": {
 			"type": "custom:keybind",
 			"name": "Popup keybind",
-			"description": "Press this key to spawn the popup defined in <cy>custom_popups.json</c>\n\n<cg>Shift + this key</c> will queue the popup\n<cg>Alt + this key</c> will spawn the secondary one.",
+			"description": "Press this key to spawn the popup defined in <cy>custom_popups.json</c>\n\n<cg>Shift + this key</c> will queue the popup\n<cg>Alt + this key</c> will spawn the secondary one.\n<cl>(these modifier keys can be changed below)</c>",
 			"default": 36
 		},
 		"key_dialogue": {
 			"type": "custom:keybind",
 			"name": "Dialogue keybind",
-			"description": "Press this key to spawn the dialogue box defined in <cy>custom_dialogues.json</c>\n\n<cg>Shift + this key</c> will queue the dialogue\n<cg>Alt + this key</c> will spawn the secondary one.",
+			"description": "Press this key to spawn the dialogue box defined in <cy>custom_dialogues.json</c>\n\n<cg>Shift + this key</c> will queue the dialogue\n<cg>Alt + this key</c> will spawn the secondary one.\n<cl>(these modifier keys can be changed below)</c>",
 			"default": 33
 		},
 		"key_chest": {
@@ -52,6 +52,28 @@
             "description": "Plays a sound effect when a textbox is successfully queued up (by holding SHIFT)",
             "type": "bool",
 			"default": false
-        }
+        },
+		"onDeath": {
+            "name": "Spawn queued on death",
+            "description": "Also spawns the queued textbox when you die in-game. Why not.",
+            "type": "bool",
+			"default": false
+        },
+
+		"shiftRebind": {
+			"name": "Queue modifier key",
+			"description": "Spawning a textbox while holding this key will queue it up instead, making it appear the next time you click a menu button.",
+			"type": "string",
+			"one-of": ["Shift", "Alt", "Ctrl", "Command", "None"],
+			"default": "Shift"
+		},
+
+		"altRebind": {
+			"name": "Alt modifier key",
+			"description": "Spawning a textbox while holding this key will spawn the alt one instead, using the <cy>to-show-alt</c> JSON key.",
+			"type": "string",
+			"one-of": ["Shift", "Alt", "Ctrl", "Command", "None"],
+			"default": "Alt"
+		}
 	}
 }

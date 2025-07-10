@@ -98,6 +98,7 @@ Default keybind is HOME
 - `button` (string or Button) - Button 1, defaults to "OK"
 - `button2` (string or Button) - Button 2, if you want one
     - Button 2 is also the "cancel" button for "comment" and "mod" types
+- `customButtons` (array of Buttons) - Adds additional custom buttons. You probably want to provide x and y values for them
 - `width` (float) - Width of the popup, default is 350 (normal popup type only)
 - `background` (string, int, or [filename](#texture-files-can-be-read-from)) - Background color of the popup
     - Main ones are brown, blue, green, purple, grey, lightgrey, transparent (GJ_square0#.png)
@@ -114,6 +115,7 @@ Default keybind is HOME
 - `width` (float) - Custom width for the button
 - `height` (float) - Maybe you wanna change the height too idk
 - `x`, `y` (float) - Custom positioning for the button (0, 0 is the middle of the button row)
+- `z` (int) - Z order for the button. Buttons with a higher Z order will be placed in front of others
 - `scale` (float) - Scale factor for the whole button
 - `onClick` ([Callback](#callbacks)) - Spawns something when the button is clicked
 - `pulse` (object) - Enables size pulsing for the button
@@ -154,7 +156,6 @@ Extra properties exclusive to icon/shop type:
 
 **Extra properties exclusive to mod type:**
 - `platformer` (bool) - Use moons instead of stars
-- This popup actually DOES function but I hardcoded it to use Generation Retro
 
 Advanced example:
 ```json
